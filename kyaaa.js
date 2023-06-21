@@ -487,6 +487,26 @@ console.log(color(err))
 }
 */
 
+// By FarelAE
+function otakudesubaru() { // By FarelAE
+const url = 'https://otakudesu.lol/ongoing-anime/'
+return new Promise((resolve, reject) => {
+axios.get(url)
+.then(({ data }) => {
+const $ = cheerio.load(data)
+const hasil = []
+$('.thumb').each(function(a, p) {
+hasil.push({
+gambar: $(p).find('img').attr('src'),
+judul: $(p).find('.thumbz > h2').text().trim(),
+link: $(p).find('a').attr('href')
+})
+})
+resolve(hasil)
+}).catch(reject)
+})
+}
+
 if (!command && !m.key.fromMe && !/webp/.test(mime) && /image/.test(mime)) {
 
                 let media = await quoted.download()
@@ -663,6 +683,69 @@ sock.sendMessage(from, buttonMessage)
         }
 
         switch (command) {
+        
+        
+        case 'anime': {
+if (!text) { // Ketika menggunakan command tanpa kata kunci
+        let ongonging = await otakudesubaru()
+        let acakgmbr = ongonging[Math.floor(Math.random() * ongonging.length)]
+        //let gmbrnya = await exec(`curl https://api.cloudinary.com/v1_1/demo/image/create_collage -X POST --data 'public_id=test_collage&resource_type=image&manifest_json={"template": "grid","width": 500,"height": 500,"columns": 3,"rows": 3, "spacing": 1,"color": "blue","assetDefaults": { "kind": "upload", "crop": "fill", "gravity": "auto"},"assets": [{ "media": "${ongonging[0].gambar}" }, { "media": "${ongonging[1].gambar}" },{ "media": "${ongonging[2].gambar}" }, { "media": "${ongonging[3].gambar}" },{ "media": "${ongonging[4].gambar}" },{ "media": "${ongonging[5].gambar}" }, { "media": "${ongonging[6].gambar}" }, { "media": "${ongonging[7].gambar}" },{ "media": "${ongonging[8].gambar}" }]}&timestamp=173719931&api_key=436464676&signature=a781d61f86a6f818af'`)
+        let randh = getRandom('.jpg')
+        let resImage = `./${randh}`
+        exec(`montage "${ongonging[0].gambar}" "${ongonging[1].gambar}" "${ongonging[2].gambar}" "${ongonging[3].gambar}" "${ongonging[4].gambar}" "${ongonging[5].gambar}" "${ongonging[6].gambar}" "${ongonging[7].gambar}" "${ongonging[8].gambar}" "${ongonging[9].gambar}" "${ongonging[10].gambar}" "${ongonging[11].gambar}" \ -geometry 340x480+5+5 '${resImage}'`, async(err) => {
+        let inihasil = fs.readFileSync(resImage)
+        await sleep(5000)
+        let resImagebuf = await Jimp.read(resImage)
+        let kurangres = await resize(resImagebuf, 360, 360)
+        let nomor = 0
+        let teksanim = `*ANIME TERBARU*\n\n`
+        for (let oy of ongonging) {
+        teksanim += `${nomor+=1}. ${oy.judul}\n`
+        }
+        await sock.sendMessage(from, { image: kurangres, caption: teksanim }, { quoted: m })
+        await fs.unlinkSync(resImage)
+
+})
+        }
+        }
+        break
+
+        
+case 'ytmp3': {
+if (!text) return gadalink()
+if (text.match('watch')) return linkeror();
+if (!text.includes('youtu.be') && !text.includes('youtube.com')) return linksalah()
+try {
+let yt = await youtubedlv2(text)
+let get_iimg = await getBuffer(yt.thumbnail)
+let linkytdl = await yt.audio['128kbps'].download()
+if (yt.audio['128kbps'].fileSize > 10000) return m.reply(`Ukuran melebihi batas maksimal 10 MB\n\n*Link download*\n${linkytdl}`)
+tunggu()
+await sleep(1000)
+sock.sendMessage(m.chat, { document: {url: linkytdl}, mimetype: 'audio/mpeg', fileName: `${yt.title}.mp3`,contextInfo: {externalAdReply: {title: `${yt.title}`, body: namaBot, mediaUrl: text, sourceUrl: text, mediaType: 2, showAdAttribution: true, thumbnail: get_iimg}}}, {}).catch((e) => reply(String(e)))
+} catch (err) {
+reply(String(err))
+}
+}
+break
+case 'ytmp4': {
+if (!text) return gadalink()
+if (text.match('watch')) return linkeror();
+if (!text.includes('youtu.be') && !text.includes('youtube.com')) return linksalah()
+try {
+let yt = await youtubedlv2(text)
+let get_iimg = await getBuffer(yt.thumbnail)
+let linkytdl = await yt.video['480p'].download() || await yt.video['360p'].download()
+if (yt.video['480p'].fileSize > 20000) return m.reply(`Ukuran melebihi batas maksimal 20 MB\n\n*Link download*\n${linkytdl}`)
+tunggu()
+await sleep(1000)
+sock.sendMessage(m.chat, { document: {url: linkytdl}, mimetype: 'video/mp4', fileName: `${yt.title}.mp4`,contextInfo: {externalAdReply: {title: `${yt.title}`, body: namaBot, mediaUrl: text, sourceUrl: text, mediaType: 2, showAdAttribution: true, thumbnail: get_iimg}}}, {}).catch((e) => reply(String(e)))
+} catch (err) {
+reply(String(err))
+}
+}
+break
+        
                         case 'toimage': case 'toimg': { // Membutuhkan ffmpeg
                 if (!quoted) return stiktutor1()
                 if (!/webp/.test(mime)) return stiktutor1()
